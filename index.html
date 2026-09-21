@@ -135,6 +135,13 @@ header.top::before{content:"";display:block;height:3px;background:var(--brand)}
 .sc-tip{position:absolute;pointer-events:none;background:var(--navy);color:#fff;font-size:12px;line-height:1.45;padding:8px 10px;border-radius:7px;max-width:280px;opacity:0;transition:opacity .1s;z-index:2;box-shadow:0 4px 14px rgba(6,41,77,.25)}
 .sc-tip b{font-weight:700}
 .sc-tip .sm{opacity:.8;font-size:11px}
+.sc-tip{max-width:360px}
+.sc-tip .tl{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.18)}
+.sc-tip .tl.cur{background:rgba(255,255,255,.08);margin-inline:-6px;padding-inline:6px;border-radius:5px}
+.sc-tip .lv{font-weight:700;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.sc-tip .lv.l2{color:#ff9aa5}.sc-tip .lv.l1{color:#f3c77a}.sc-tip .lv.l0{color:#8fd3ad}
+.hzc .threat{font-size:13px;color:var(--text);margin:6px 0 0;line-height:1.55}
+.sc-year{font-family:var(--display);font-weight:800;font-size:13px;color:var(--brand)}
 .sc-note{font-size:11.5px;color:var(--faint);padding:0 16px 12px;line-height:1.5}
 @media(max-width:640px){#sc{height:340px}}
 
@@ -285,6 +292,8 @@ td.rt{text-align:right;font-variant-numeric:tabular-nums}
           <h2>Every course, plotted</h2>
           <span class="hint" id="scHint"></span>
           <div class="right">
+            <div class="seg" id="scH"><button data-h="0">2028</button><button data-h="1" class="on">2031</button><button data-h="2">2036</button></div>
+            <button class="btn sm" id="scPlay" title="Animate 2028 → 2031 → 2036">▶ Play</button>
             <div class="seg" id="scY"><button data-v="prot" class="on">Up: how protected</button><button data-v="rise">Up: change by 2036</button></div>
             <div class="legend"><span><i class="b0"></i>Low</span><span><i class="b1"></i>Medium</span><span><i class="b2"></i>High</span></div>
           </div>
@@ -523,54 +532,107 @@ function dist(rows) {
   }).join('') : '<div class="empty">No courses match these filters.</div>';
 }
 
+// ---------- plain-language threat explanation ----------
+const LEVEL = ['Not under threat', 'Partly under threat', 'Under threat'];
+const andJoin = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + (a.length > 2 ? ',' : '') + ' and ' + a[a.length - 1];
+function protections(c, h) {
+  const f = i => c.f[i][h], p = [];
+  if (c.damp[h]) {
+    if (f(1) <= 2) p.push('mistakes here are costly or hard to spot, so a trained person has to check AI’s work');
+    if (f(2) <= 2) p.push('the work is hands-on or done in person');
+  }
+  if (c.held[h] === 'lockin') p.push(f(3) === 1 ? 'licensure or accreditation requires it (for example, supervised clinical or field hours)'
+    : f(3) === 2 ? (c.gs ? 'it is a Colorado gtPathways general-education course, required for transfer' : 'a state or accreditation requirement keeps it in the curriculum')
+    : 'it counts toward a professional license’s required coursework');
+  if (c.held[h] === 'found') p.push('later required courses build on it');
+  return p;
+}
+function explain(c, h) {
+  const Y = HZY[h], p = protections(c, h), t = c.task[h], r = c.r[h];
+  if (r === 2) return `By ${Y}, AI is expected to handle most of the work this course prepares students for, and nothing (hands-on work, costly mistakes, a licensing rule, or later courses) keeps it necessary.`;
+  if (r === 1) return t === 2 ? `By ${Y}, AI could handle most of the work, but ${andJoin(p)}.`
+                              : `By ${Y}, AI can take over some of the work this course prepares students for, but not most of it.`;
+  if (t === 0) {
+    const f = i => c.f[i][h], s = [];
+    if (f(2) <= 2) s.push('the work is hands-on or in person');
+    if (f(1) <= 2) s.push('mistakes are costly, so trained people must check the work');
+    if (f(3) === 1) s.push('licensure or accreditation requires it');
+    else if (f(3) === 2 && c.gs) s.push('it is a required gtPathways general-education course');
+    if (f(4) <= 2) s.push('later required courses build on it');
+    return `By ${Y}, AI can do little of the work this course prepares students for.` + (s.length ? ` It is also protected because ${andJoin(s)}.` : '');
+  }
+  return `By ${Y}, AI could handle ${t === 2 ? 'most' : 'some'} of the work, but ${andJoin(p)}.`;
+}
+const taskLine = c => typeof c.w === 'string' ? c.w : andJoin(c.w);
+
 // ---------- scatter ----------
 // deterministic jitter so dots don't jump between renders
 function hash(str, salt) { let h = 2166136261 ^ salt; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 10000) / 10000 - 0.5; }
 // protection 0..1 from F2-F5 at horizon h (low factor score = more protective)
 const prot = (c, h) => [1, 2, 3, 4].reduce((a, i) => a + (5 - c.f[i][h]) / 4, 0) / 4;
-let scPts = [];
-function scatter(rows) {
-  const cv = $('#sc'), h = S.h, dpr = window.devicePixelRatio || 1;
-  const W = cv.clientWidth, H = cv.clientHeight;
+const DOT = ['rgba(31,122,77,.55)', 'rgba(192,122,21,.62)', 'rgba(204,32,48,.75)'];
+let scPts = [], scPrev = {}, scRaf = 0, animNext = false;
+function scLayout() {
+  const cv = $('#sc'), W = cv.clientWidth, H = cv.clientHeight;
+  const m = { l: 84, r: 14, t: 12, b: 38 }, pw = W - m.l - m.r, ph = H - m.t - m.b, rise = S.scY === 'rise';
+  return { cv, W, H, m, pw, ph, rise, X: v => m.l + (v - 0.5) / 5 * pw, Y: rise ? v => m.t + ph - (v + 0.5) / 5 * ph : v => m.t + ph - v * ph };
+}
+function scDraw(L, pts, r, h) {
+  const { cv, W, H, m, pw, ph, rise, X, Y } = L, dpr = window.devicePixelRatio || 1;
   cv.width = W * dpr; cv.height = H * dpr;
   const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
-  const m = { l: 84, r: 14, t: 12, b: 38 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
-  const rise = S.scY === 'rise';
-  const X = v => m.l + (v - 0.5) / 5 * pw;
-  const Y = rise ? v => m.t + ph - (v + 0.5) / 5 * ph : v => m.t + ph - v * ph;
-  // quadrant shading (protection view): exposed & unprotected corner
   g.font = '11px Roboto, system-ui, sans-serif';
   if (!rise) {
     g.fillStyle = 'rgba(204,32,48,.05)'; g.fillRect(X(3.5), Y(0.5), X(5.5) - X(3.5), Y(0) - Y(0.5));
     g.fillStyle = 'rgba(6,41,77,.045)'; g.fillRect(X(3.5), Y(1), X(5.5) - X(3.5), Y(0.5) - Y(1));
-    g.fillStyle = '#b3414c'; g.textAlign = 'right'; g.fillText('exposed, little protection', X(5.5) - 6, Y(0) - 7);
-    g.fillStyle = '#51677f'; g.fillText('exposed, but protected', X(5.5) - 6, Y(1) + 15);
+    g.fillStyle = '#b3414c'; g.textAlign = 'right'; g.fillText('AI can do it, little protection', X(5.5) - 6, Y(0) - 7);
+    g.fillStyle = '#51677f'; g.fillText('AI can do it, but protected', X(5.5) - 6, Y(1) + 15);
   }
-  // grid + axes
   g.strokeStyle = '#e2e8ee'; g.lineWidth = 1; g.fillStyle = '#8a97a3'; g.textAlign = 'center';
-  for (let v = 1; v <= 5; v++) { g.beginPath(); g.moveTo(X(v), m.t); g.lineTo(X(v), m.t + ph); g.stroke(); g.fillText(v, X(v), m.t + ph + 15); }
+  const xl = ['Very little', 'A little', 'Some', 'Most', 'Nearly all'];
+  const narrow = pw < 420; if (narrow) g.font = '10px Roboto, system-ui, sans-serif';
+  for (let v = 1; v <= 5; v++) { g.beginPath(); g.moveTo(X(v), m.t); g.lineTo(X(v), m.t + ph); g.stroke(); g.fillText(narrow && v === 1 ? 'V. little' : xl[v - 1], X(v), m.t + ph + 15); }
   g.fillStyle = '#5b6b7a'; g.font = '600 11px Roboto, system-ui, sans-serif';
-  g.fillText(`How much of the work AI can do by ${HZY[h]}  →`, m.l + pw / 2, H - 5);
+  g.fillText(narrow ? `Work AI can do by ${HZY[h]} →` : `How much of the course’s core work AI can do by ${HZY[h]}  →`, m.l + pw / 2, H - 5);
   g.font = '11px Roboto, system-ui, sans-serif'; g.fillStyle = '#8a97a3'; g.textAlign = 'right';
-  const yt = rise ? [[0, 'no change'], [1, 'slight'], [2, 'moderate'], [3, 'large'], [4, 'very large']] : [[0, 'barely'], [0.25, ''], [0.5, 'somewhat'], [0.75, ''], [1, 'strongly']];
+  const yt = rise ? [[0, 'No change'], [1, 'Slight'], [2, 'Moderate'], [3, 'Large'], [4, 'Very large']] : [[0, 'Barely'], [0.25, ''], [0.5, 'Somewhat'], [0.75, ''], [1, 'Strongly']];
   yt.forEach(([v, l]) => { g.beginPath(); g.moveTo(m.l, Y(v)); g.lineTo(m.l + pw, Y(v)); g.stroke(); if (l) g.fillText(l, m.l - 6, Y(v) + 4); });
   g.save(); g.translate(13, m.t + ph / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillStyle = '#5b6b7a'; g.font = '600 11px Roboto, system-ui, sans-serif';
   g.fillText(rise ? 'How much more AI can do by 2036  →' : 'How protected the course is  →', 0, 0); g.restore();
-  // points: draw High last so they sit on top
-  const col = ['rgba(31,122,77,.55)', 'rgba(192,122,21,.62)', 'rgba(204,32,48,.75)'];
-  scPts = rows.map(c => {
+  // big faint year watermark so the timeline is obvious
+  g.fillStyle = 'rgba(6,41,77,.07)'; g.font = '800 64px Montserrat, system-ui, sans-serif'; g.textAlign = 'left';
+  g.fillText(HZY[h], m.l + 10, m.t + 62);
+  pts.slice().sort((a, b) => a.b - b.b).forEach(p => { g.fillStyle = DOT[p.b]; g.beginPath(); g.arc(p.x, p.y, p.c.id === drawerId ? r + 3 : r, 0, 6.2832); g.fill(); });
+  if (drawerId) { const p = pts.find(p => p.c.id === drawerId); if (p) { g.strokeStyle = '#06294d'; g.lineWidth = 2; g.beginPath(); g.arc(p.x, p.y, r + 5, 0, 6.2832); g.stroke(); } }
+}
+function scatter(rows) {
+  const h = S.h, L = scLayout(), dpr = window.devicePixelRatio || 1;
+  const target = rows.map(c => {
     const xv = c.f[0][h] + hash(c.id, 1) * 0.7;
-    const yv = rise ? (c.f[0][2] - c.f[0][0]) + hash(c.id, 2) * 0.7 : prot(c, h) + hash(c.id, 2) * 0.055;
-    return { c, x: X(xv), y: Y(yv), b: c.r[h] };
-  }).sort((a, b) => a.b - b.b);
+    const yv = L.rise ? (c.f[0][2] - c.f[0][0]) + hash(c.id, 2) * 0.7 : prot(c, h) + hash(c.id, 2) * 0.055;
+    return { c, x: L.X(xv), y: L.Y(yv), b: c.r[h] };
+  });
   const r = rows.length > 1500 ? 2.6 : rows.length > 300 ? 3.4 : 4.5;
-  scPts.forEach(p => { g.fillStyle = col[p.b]; g.beginPath(); g.arc(p.x, p.y, p.c.id === drawerId ? r + 3 : r, 0, 6.2832); g.fill(); });
-  if (drawerId) { const p = scPts.find(p => p.c.id === drawerId); if (p) { g.strokeStyle = '#06294d'; g.lineWidth = 2; g.beginPath(); g.arc(p.x, p.y, r + 5, 0, 6.2832); g.stroke(); } }
-  scatter.r = r;
-  $('#scHint').textContent = `${rows.length.toLocaleString()} courses · color = rating at ${HZ[h]} · hover to identify, click to open`;
-  $('#scNote').innerHTML = rise
-    ? '<b>Up</b> shows how much more of the course’s work AI is expected to handle in 2036 than in 2028. Courses high on the chart look safe today but change fast. The scores are whole numbers, so dots are nudged slightly apart to stay visible; exact position within a column has no meaning.'
-    : '<b>How protected</b> combines four things that keep a course necessary even when AI can do the work: AI’s mistakes are costly or hard to catch, so someone who knows the material must check them; the work is hands-on or in person; a license, accreditor, or state transfer rule requires the course; or later courses build on it. <b>Red dots high on the chart are rare</b>, because that protection is what keeps exposed courses below High. The scores are whole numbers, so dots are nudged slightly apart to stay visible; exact position within a column has no meaning.';
+  scatter.r = r; scPts = target;
+  cancelAnimationFrame(scRaf);
+  const from = scPrev, doAnim = animNext && Object.keys(from).length && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  animNext = false;
+  if (doAnim) {
+    const t0 = performance.now(), dur = 750;
+    const step = now => {
+      const t = Math.min(1, (now - t0) / dur), e = t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+      scDraw(L, target.map(p => { const o = from[p.c.id] || p; return { c: p.c, x: o.x + (p.x - o.x) * e, y: o.y + (p.y - o.y) * e, b: t < .5 ? (o.b ?? p.b) : p.b }; }), r, h);
+      if (t < 1) scRaf = requestAnimationFrame(step);
+    };
+    scRaf = requestAnimationFrame(step);
+  } else scDraw(L, target, r, h);
+  scPrev = Object.fromEntries(target.map(p => [p.c.id, p]));
+  document.querySelectorAll('#scH button').forEach(b => b.classList.toggle('on', +b.dataset.h === h));
+  $('#scHint').innerHTML = `<span class="sc-year">${HZY[h]}</span> · ${rows.length.toLocaleString()} courses · color = rating that year · hover a dot for why`;
+  $('#scNote').innerHTML = (L.rise
+    ? '<b>Up</b> shows how much more of the course’s work AI is expected to handle in 2036 than in 2028. Courses high on the chart look safe today but change fast.'
+    : '<b>How protected</b> combines four things that keep a course necessary even when AI can do the work: AI’s mistakes are costly or hard to catch, so someone who knows the material must check them; the work is hands-on or in person; a license, accreditor, or state transfer rule requires the course; or later courses build on it. <b>Red dots high on the chart are rare</b>, because that protection is what keeps exposed courses below High.')
+    + ' <b>Across</b> is a five-step scale, from “very little” to “nearly all” of the work the course prepares students to do; each column is one step, so a dot’s exact spot inside its column has no meaning (dots are spread out only so they don’t hide each other). Switch years above, or press ▶ Play, to watch courses move right as AI capability and adoption grow.';
 }
 function scHit(ev) {
   const cv = $('#sc'), bb = cv.getBoundingClientRect(), x = ev.clientX - bb.left, y = ev.clientY - bb.top;
@@ -578,6 +640,7 @@ function scHit(ev) {
   for (let i = scPts.length - 1; i >= 0; i--) { const p = scPts[i], d = (p.x - x) ** 2 + (p.y - y) ** 2; if (d < bd) { bd = d; best = p; } }
   return { best, x, y };
 }
+function setHorizon(hh) { S.h = hh; S.rt.clear(); S.why.clear(); animNext = true; render(); }
 
 // ---------- table ----------
 const pill = (b, dim) => `<span class="pill r${b} ${dim ? 'dim' : ''}">${BAND[b]}</span>`;
@@ -642,8 +705,10 @@ async function openDrawer(id) {
   $('#drRest').innerHTML = `
     ${R && R.n ? `<div class="dr-sec"><div class="updnote">${esc(R.n)}</div></div>` : ''}
     <div class="dr-sec"><h4>Catalog description</h4><div class="dr-desc">${R ? esc(R.d) || '—' : 'Could not load. The detail files need the site to be served over the web, not opened as a local file.'}</div></div>
+    <div class="dr-sec"><h4>What the course prepares students to do</h4><div class="dr-desc" style="color:var(--text)">${esc(taskLine(c))}</div></div>
     <div class="dr-sec"><h4>Rating at each horizon</h4>${[0, 1, 2].map(h => `
       <div class="hzc"><div class="hh">${HZ[h]} (${HZY[h]}) ${pill(c.r[h])}</div>
+      <div class="threat"><b>${LEVEL[c.r[h]]}.</b> ${esc(explain(c, h))}</div>
       <div class="why">${whyText(c, h)}</div>
       ${R ? `<p>${esc(R.r[h])}</p>` : ''}</div>`).join('')}</div>
     <div class="dr-sec"><h4>Factor scores (1–5)</h4>${ft}</div>`;
@@ -752,7 +817,9 @@ document.addEventListener('click', e => {
     else { const val = g === 'col' || g === 'why' ? v : +v; const set = S[g]; set.has(val) ? set.delete(val) : set.add(val); }
     shown = 200; render(); return;
   }
-  if (t.closest('#hzSeg')) { S.h = +t.dataset.h; S.rt.clear(); S.why.clear(); render(); return; }
+  if (t.closest('#hzSeg')) { setHorizon(+t.dataset.h); return; }
+  if (t.closest('#scH')) { playing = false; setHorizon(+t.dataset.h); return; }
+  if (t.id === 'scPlay') { playYears(); return; }
   if (t.closest('#distBy')) { S.distBy = t.dataset.v; document.querySelectorAll('#distBy button').forEach(b => b.classList.toggle('on', b === t)); render(); return; }
   if (t.matches('.drow')) {
     const k = t.dataset.k;
@@ -813,14 +880,20 @@ $('#sc').addEventListener('mousemove', ev => {
   const { best, x, y } = scHit(ev), tip = $('#scTip');
   if (!best) { tip.style.opacity = 0; $('#sc').style.cursor = 'crosshair'; return; }
   const c = best.c, h = S.h;
-  tip.innerHTML = `<b>${esc(c.id)}</b> ${esc(c.t)}<br><span class="sm">${esc(COLS[c.col])}</span><br>${HZ.map((z, i) => `${z}: <b>${BAND[c.r[i]]}</b>`).join(' · ')}<br><span class="sm">By ${HZY[h]}: AI can do ${c.f[0][h]} of 5 · ${(p => p < 0.34 ? 'barely' : p < 0.67 ? 'somewhat' : 'strongly')(prot(c, h))} protected</span>`;
+  tip.innerHTML = `<b>${esc(c.id)}</b> ${esc(c.t)}<br><span class="sm">${esc(COLS[c.col])}</span><div class="tl"><span class="sm">The course:</span> ${esc(taskLine(c))}</div>` + [0, 1, 2].map(i => `<div class="tl ${i === h ? 'cur' : ''}"><span class="lv l${c.r[i]}">${HZY[i]} · ${LEVEL[c.r[i]]}</span><br>${esc(explain(c, i))}</div>`).join('');
   const wrap = $('#sc').parentElement.clientWidth;
-  tip.style.left = Math.min(x + 26, wrap - 290) + 'px'; tip.style.top = (y + 18) + 'px'; tip.style.opacity = 1; $('#sc').style.cursor = 'pointer';
+  tip.style.left = Math.max(0, Math.min(x + 26, wrap - 372)) + 'px'; tip.style.top = Math.max(0, Math.min(y + 18, $('#sc').clientHeight - tip.offsetHeight + 30)) + 'px'; tip.style.opacity = 1; $('#sc').style.cursor = 'pointer';
 });
 $('#sc').addEventListener('mouseleave', () => { $('#scTip').style.opacity = 0; });
 $('#sc').addEventListener('click', ev => { const { best } = scHit(ev); if (best) openDrawer(best.c.id); });
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => scatter(filtered()), 120); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerId) closeDrawer(); });
+let playing = false;
+async function playYears() {
+  playing = true;
+  for (const hh of [0, 1, 2]) { if (!playing) return; setHorizon(hh); await new Promise(r => setTimeout(r, 1500)); }
+  playing = false;
+}
 let tt; function toast(m) { const el = $('#toast'); el.textContent = m; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 1800); }
 
 concerns(); method(); shortlist(); render();

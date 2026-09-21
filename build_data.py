@@ -30,6 +30,46 @@ def scrub(t):
     t = re.sub(r'[\w.+-]+@[\w-]+\.[\w.]*\w', '[contact omitted]', t or '')
     return re.sub(r'\(?\b\d{3}[-.)\s]\s?\d{3}[-.]\d{4}\b', '[contact omitted]', t)
 
+
+# plain-language phrases for O*NET work activities (for the "why" explanations)
+PLAIN = [
+ ('analyzing data', 'analyzing data'), ('getting information', 'gathering information'),
+ ('interpreting the meaning', 'explaining information to others'), ('documenting', 'keeping records and documentation'),
+ ('thinking creatively', 'creative work'), ('making decisions', 'making decisions and solving problems'),
+ ('compliance with standards', 'checking work against standards'), ('interacting with computers', 'computer work'),
+ ('working with computers', 'computer work'), ('updating and using', 'applying specialized knowledge'),
+ ('training and teaching', 'teaching others'), ('outside organization', 'working with clients and the public'),
+ ('outside the organization', 'working with clients and the public'), ('interpersonal relationships', 'building working relationships'),
+ ('general physical', 'physical work'), ('assisting and caring', 'caring for people'), ('directly with the public', 'working directly with the public'),
+ ('handling and moving', 'hands-on work with materials'), ('processing information', 'processing information'),
+ ('coordinating the work', 'coordinating people'), ('developing objectives', 'setting strategy'),
+ ('supervisors, peers', 'communicating with colleagues'), ('coaching and developing', 'coaching others'),
+ ('monitoring processes', 'monitoring processes'), ('inspecting equipment', 'inspecting equipment and structures'),
+ ('organizing, planning', 'planning work'), ('guiding, directing', 'leading teams'), ('controlling machines', 'operating machines'),
+ ('developing and building teams', 'building teams'), ('drafting, laying out', 'technical drafting and design'),
+ ('identifying objects', 'observing and identifying'), ('resolving conflicts', 'resolving conflicts'), ('estimating the quantifiable', 'estimating and measuring'),
+ ('operating vehicles', 'operating vehicles and equipment'), ('selling or influencing', 'persuading others'), ('judging the qualities', 'judging quality'),
+ ('administrative activities', 'administrative work'), ('scheduling work', 'scheduling'), ('writing', 'writing'),
+]
+def plain_tasks(onet):
+    out = []
+    for a in (onet or '').split(';'):
+        k = re.sub(r'\s+', ' ', a.strip().lower())
+        if not k: continue
+        p = next((v for key, v in PLAIN if key in k), None) or re.sub(r'\(.*?\)', '', k).strip()
+        if p and p not in out: out.append(p)
+        if len(out) == 2: break
+    return out
+ONET = {}
+for _p in glob.glob(os.path.expanduser('~/claude-drive/work/ratings/*.jsonl')):
+    for _l in open(_p):
+        if _l.strip():
+            _c = json.loads(_l); ONET[_c['course_id']] = _c.get('onet', '')
+
+PHRASES = {}
+for _p in sorted(glob.glob(os.path.expanduser('~/claude-drive/work/phrases/out_[0-9].json'))):
+    PHRASES.update(json.load(open(_p)))
+
 rows, prefix_reason = [], collections.defaultdict(dict)
 for p in sorted(glob.glob(f'{REV}/vol_*.json')):
     vol = json.load(open(p))
@@ -51,7 +91,7 @@ for p in sorted(glob.glob(f'{REV}/vol_*.json')):
                 'held': [t[3] for t in tr],           # cap holding it below its dampened task band
                 'damp': [1 if t[1] < t[0] else 0 for t in tr],
                 'cf': {'high': 2, 'medium': 1, 'medium-high': 1, 'low': 0}[c['confidence']],
-                'u': 1 if k in changes else 0, 'uc': 1 if k in changes and changes[k]['rating_changed'] else 0,
+                'w': scrub(PHRASES[k]) if PHRASES.get(k) else plain_tasks(ONET.get(k)), 'u': 1 if k in changes else 0, 'uc': 1 if k in changes and changes[k]['rating_changed'] else 0,
             })
             prefix_reason[pref][k] = {'r': [scrub(c['reasoning_24m']), scrub(c['reasoning_5y']), scrub(c['reasoning_10y'])],
                                       'n': c.get('update_note'), 'd': scrub(cc.get('description'))}

@@ -10,7 +10,7 @@ for l in open(CAT):
 changes = {c['course_id']: c for c in json.load(open(os.path.expanduser('~/claude-drive/work/update_2026-09/changes.json')))}
 COL_SHORT = {'College of Letters, Arts and Sciences': 'CLAS', 'College of Health and Human Sciences': 'CHHS',
              'College of Aerospace, Computing, Engineering, and Design': 'CACED', 'College of Business': 'COB',
-             'School of Education': 'SOE', 'School of Hospitality': 'SOH', 'Honors Program (University-wide)': 'Honors'}
+             'School of Education': 'SOE', 'School of Hospitality': 'SOH'}
 
 def trace(c, h):
     """Why the rating is what it is at horizon h: task band, after dampener, binding cap."""
@@ -32,7 +32,10 @@ def scrub(t):
 
 rows, prefix_reason = [], collections.defaultdict(dict)
 for p in sorted(glob.glob(f'{REV}/vol_*.json')):
-    vol = json.load(open(p)); col = COL_SHORT[vol['college']]
+    vol = json.load(open(p))
+    if vol['college'].startswith('Honors'):  # MSU Denver has no Honors college; left out of the dashboard
+        continue
+    col = COL_SHORT[vol['college']]
     for pref, cs in vol['prefixes'].items():
         for c in cs:
             k = c['course_id']; cc = cat.get(k, {})

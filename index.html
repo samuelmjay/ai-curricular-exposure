@@ -280,6 +280,19 @@ td.rt{text-align:right;font-variant-numeric:tabular-nums}
     <aside class="rail" id="rail" aria-label="Filters"></aside>
 
     <div class="main">
+      <section class="panel" id="scatterPanel">
+        <div class="panel-h">
+          <h2>Every course, plotted</h2>
+          <span class="hint" id="scHint"></span>
+          <div class="right">
+            <div class="seg" id="scY"><button data-v="prot" class="on">Up: protection</button><button data-v="rise">Up: rise to 2036</button></div>
+            <div class="legend"><span><i class="b0"></i>Low</span><span><i class="b1"></i>Medium</span><span><i class="b2"></i>High</span></div>
+          </div>
+        </div>
+        <div class="sc-wrap"><canvas id="sc" role="img" aria-label="Scatter plot of courses by task automatability and protection"></canvas><div class="sc-tip" id="scTip"></div></div>
+        <div class="sc-note" id="scNote"></div>
+      </section>
+
       <section class="panel" id="concernPanel">
         <div class="panel-h">
           <h2>Areas of concern &amp; things to think about</h2>
@@ -299,19 +312,6 @@ td.rt{text-align:right;font-variant-numeric:tabular-nums}
           </div>
         </div>
         <div class="dist" id="dist"></div>
-      </section>
-
-      <section class="panel" id="scatterPanel">
-        <div class="panel-h">
-          <h2>Every course, plotted</h2>
-          <span class="hint" id="scHint"></span>
-          <div class="right">
-            <div class="seg" id="scY"><button data-v="prot" class="on">Up: protection</button><button data-v="rise">Up: rise to 2036</button></div>
-            <div class="legend"><span><i class="b0"></i>Low</span><span><i class="b1"></i>Medium</span><span><i class="b2"></i>High</span></div>
-          </div>
-        </div>
-        <div class="sc-wrap"><canvas id="sc" role="img" aria-label="Scatter plot of courses by task automatability and protection"></canvas><div class="sc-tip" id="scTip"></div></div>
-        <div class="sc-note" id="scNote"></div>
       </section>
 
       <section class="panel" id="coursePanel">
@@ -367,7 +367,7 @@ const C = window.COURSES;
 const BAND = ['Low', 'Medium', 'High'];
 const HZ = ['24 mo', '5 yr', '10 yr'];
 const HZY = ['2028', '2031', '2036'];
-const COLS = { CLAS: 'Letters, Arts & Sciences', CHHS: 'Health & Human Sciences', CACED: 'Aerospace, Computing, Engineering & Design', COB: 'Business', SOE: 'Education', SOH: 'Hospitality', Honors: 'Honors' };
+const COLS = { CLAS: 'Letters, Arts & Sciences', CHHS: 'Health & Human Sciences', CACED: 'Aerospace, Computing, Engineering & Design', COB: 'Business', SOE: 'Education', SOH: 'Hospitality' };
 const HELD = { lockin: ['Lock-in cap', 'lockin', 'Held down by licensure, accreditation, or gtPathways: the rules, not the task'],
                found: ['Foundational cap', 'found', 'Held down because later required courses build on it'],
                damp: ['Human oversight', 'damp', 'Verification burden or embodiment keeps a knowledgeable person in the loop'],
@@ -413,7 +413,7 @@ function kpis(rows) {
   const held = rows.filter(c => c.held[S.h] === 'lockin').length;
   const low = rows.filter(c => c.cf === 0).length;
   const k = [
-    ['Courses in view', rows.length.toLocaleString(), S.ids || S.col.size || S.q || S.rt.size || S.prefix ? 'of 3,219 rated' : '2026–27 catalog, 7 colleges', ''],
+    ['Courses in view', rows.length.toLocaleString(), S.ids || S.col.size || S.q || S.rt.size || S.prefix ? `of ${C.length.toLocaleString()} rated` : '2026–27 catalog, 6 colleges & schools', ''],
     ['High · 24 months', cnt(0, 2), pct(cnt(0, 2)) + ' · by 2028', 'crit'],
     ['High · 5 years', cnt(1, 2).toLocaleString(), pct(cnt(1, 2)) + ' · by 2031', 'crit'],
     ['High · 10 years', cnt(2, 2).toLocaleString(), pct(cnt(2, 2)) + ' · by 2036, widest uncertainty', 'crit'],
@@ -698,7 +698,7 @@ const SRC = [
 ];
 function method() {
   $('#methodBody').innerHTML = `
-  <p class="method-lead">Every course in the 2026–27 undergraduate catalog (<b>3,219 courses</b>, seven colleges and schools) is rated at three <b>horizons</b>: 24 months (2028), 5 years (2031), and 10 years (2036). A horizon combines three clocks that move at different speeds: what AI can do (<b>capability</b>), how widely employers use it (<b>adoption</b>), and how quickly curricula and licensure rules change (<b>institutional change</b>).</p>
+  <p class="method-lead">Every course in the 2026–27 undergraduate catalog (<b>${C.length.toLocaleString()} courses</b>, six colleges and schools) is rated at three <b>horizons</b>: 24 months (2028), 5 years (2031), and 10 years (2036). A horizon combines three clocks that move at different speeds: what AI can do (<b>capability</b>), how widely employers use it (<b>adoption</b>), and how quickly curricula and licensure rules change (<b>institutional change</b>).</p>
   <div class="method-block"><h3>The five factors (each scored 1–5 per horizon)</h3>
     <div class="factors">
       <div class="fcard"><div class="fn">F1 · Task automatability</div><div class="fd">How much of the work the course prepares students for AI can do <b>and</b> employers actually use it for by that horizon. It is mapped from the course description to O*NET work activities (the Department of Labor’s catalog of job tasks). Higher = more exposed.</div></div>
@@ -730,14 +730,14 @@ function method() {
     </ul></div>
   <div class="method-block"><h3>Key sources</h3>
     <ol class="srcs">${SRC.map(([t, u, f]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>${f ? `<span class="flag">${f}</span>` : ''}</li>`).join('')}</ol>
-    <p>The full master report and the seven college volumes carry complete citations, including 27 hyperlinked sources for the September 2026 update.</p></div>`;
+    <p>The full master report and the college volumes carry complete citations, including 27 hyperlinked sources for the September 2026 update.</p></div>`;
 }
 
 // ---------- render ----------
 function render() {
   const rows = filtered();
   kpis(rows); rail(); dist(filtered({ col: S.distBy === 'col' })); scatter(rows); table(rows);
-  $('#foot').innerHTML = `MSU Denver 2026–27 Undergraduate Catalog · 3,219 rated courses (42 excluded as out of scope) · ratings revised September 21, 2026 · public catalog and published research only; no student or employee data. Discussion marks, notes, and lists are stored only in your browser.`;
+  $('#foot').innerHTML = `MSU Denver 2026–27 Undergraduate Catalog · ${C.length.toLocaleString()} rated courses · ratings revised September 21, 2026 · public catalog and published research only; no student or employee data. Discussion marks, notes, and lists are stored only in your browser.`;
 }
 
 // ---------- events ----------

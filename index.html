@@ -285,7 +285,7 @@ td.rt{text-align:right;font-variant-numeric:tabular-nums}
           <h2>Every course, plotted</h2>
           <span class="hint" id="scHint"></span>
           <div class="right">
-            <div class="seg" id="scY"><button data-v="prot" class="on">Up: protection</button><button data-v="rise">Up: rise to 2036</button></div>
+            <div class="seg" id="scY"><button data-v="prot" class="on">Up: how protected</button><button data-v="rise">Up: change by 2036</button></div>
             <div class="legend"><span><i class="b0"></i>Low</span><span><i class="b1"></i>Medium</span><span><i class="b2"></i>High</span></div>
           </div>
         </div>
@@ -534,7 +534,7 @@ function scatter(rows) {
   const W = cv.clientWidth, H = cv.clientHeight;
   cv.width = W * dpr; cv.height = H * dpr;
   const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
-  const m = { l: 46, r: 14, t: 12, b: 38 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const m = { l: 84, r: 14, t: 12, b: 38 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
   const rise = S.scY === 'rise';
   const X = v => m.l + (v - 0.5) / 5 * pw;
   const Y = rise ? v => m.t + ph - (v + 0.5) / 5 * ph : v => m.t + ph - v * ph;
@@ -550,12 +550,12 @@ function scatter(rows) {
   g.strokeStyle = '#e2e8ee'; g.lineWidth = 1; g.fillStyle = '#8a97a3'; g.textAlign = 'center';
   for (let v = 1; v <= 5; v++) { g.beginPath(); g.moveTo(X(v), m.t); g.lineTo(X(v), m.t + ph); g.stroke(); g.fillText(v, X(v), m.t + ph + 15); }
   g.fillStyle = '#5b6b7a'; g.font = '600 11px Roboto, system-ui, sans-serif';
-  g.fillText(`Task automatability (F1) at ${HZ[h]}  →  more exposed`, m.l + pw / 2, H - 5);
+  g.fillText(`How much of the work AI can do by ${HZY[h]}  →`, m.l + pw / 2, H - 5);
   g.font = '11px Roboto, system-ui, sans-serif'; g.fillStyle = '#8a97a3'; g.textAlign = 'right';
-  const yt = rise ? [[0, 'none'], [1, '+1'], [2, '+2'], [3, '+3'], [4, '+4']] : [[0, 'weak'], [0.25, ''], [0.5, ''], [0.75, ''], [1, 'strong']];
+  const yt = rise ? [[0, 'no change'], [1, 'slight'], [2, 'moderate'], [3, 'large'], [4, 'very large']] : [[0, 'barely'], [0.25, ''], [0.5, 'somewhat'], [0.75, ''], [1, 'strongly']];
   yt.forEach(([v, l]) => { g.beginPath(); g.moveTo(m.l, Y(v)); g.lineTo(m.l + pw, Y(v)); g.stroke(); if (l) g.fillText(l, m.l - 6, Y(v) + 4); });
-  g.save(); g.translate(12, m.t + ph / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillStyle = '#5b6b7a'; g.font = '600 11px Roboto, system-ui, sans-serif';
-  g.fillText(rise ? 'Rise in F1, 24 mo → 10 yr' : 'Protection (F2–F5 combined)', 0, 0); g.restore();
+  g.save(); g.translate(13, m.t + ph / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillStyle = '#5b6b7a'; g.font = '600 11px Roboto, system-ui, sans-serif';
+  g.fillText(rise ? 'How much more AI can do by 2036  →' : 'How protected the course is  →', 0, 0); g.restore();
   // points: draw High last so they sit on top
   const col = ['rgba(31,122,77,.55)', 'rgba(192,122,21,.62)', 'rgba(204,32,48,.75)'];
   scPts = rows.map(c => {
@@ -569,8 +569,8 @@ function scatter(rows) {
   scatter.r = r;
   $('#scHint').textContent = `${rows.length.toLocaleString()} courses · color = rating at ${HZ[h]} · hover to identify, click to open`;
   $('#scNote').innerHTML = rise
-    ? 'Up shows how much a course’s task automatability climbs between 2028 and 2036. Courses high and to the right become exposed later but steeply. Factor scores are whole numbers, so dots are nudged slightly apart to stay visible; position within a cell has no meaning.'
-    : 'Protection combines verification burden, embodiment, institutional lock-in, and foundational role (F2–F5), scaled 0–1. <b>Red dots high on the chart are rare:</b> strong protection is what keeps exposed courses below High. Factor scores are whole numbers, so dots are nudged slightly apart to stay visible; position within a cell has no meaning.';
+    ? '<b>Up</b> shows how much more of the course’s work AI is expected to handle in 2036 than in 2028. Courses high on the chart look safe today but change fast. The scores are whole numbers, so dots are nudged slightly apart to stay visible; exact position within a column has no meaning.'
+    : '<b>How protected</b> combines four things that keep a course necessary even when AI can do the work: AI’s mistakes are costly or hard to catch, so someone who knows the material must check them; the work is hands-on or in person; a license, accreditor, or state transfer rule requires the course; or later courses build on it. <b>Red dots high on the chart are rare</b>, because that protection is what keeps exposed courses below High. The scores are whole numbers, so dots are nudged slightly apart to stay visible; exact position within a column has no meaning.';
 }
 function scHit(ev) {
   const cv = $('#sc'), bb = cv.getBoundingClientRect(), x = ev.clientX - bb.left, y = ev.clientY - bb.top;
@@ -813,7 +813,7 @@ $('#sc').addEventListener('mousemove', ev => {
   const { best, x, y } = scHit(ev), tip = $('#scTip');
   if (!best) { tip.style.opacity = 0; $('#sc').style.cursor = 'crosshair'; return; }
   const c = best.c, h = S.h;
-  tip.innerHTML = `<b>${esc(c.id)}</b> ${esc(c.t)}<br><span class="sm">${esc(COLS[c.col])}</span><br>${HZ.map((z, i) => `${z}: <b>${BAND[c.r[i]]}</b>`).join(' · ')}<br><span class="sm">F1–F5 at ${HZ[h]}: ${c.f.map(f => f[h]).join(' ')}</span>`;
+  tip.innerHTML = `<b>${esc(c.id)}</b> ${esc(c.t)}<br><span class="sm">${esc(COLS[c.col])}</span><br>${HZ.map((z, i) => `${z}: <b>${BAND[c.r[i]]}</b>`).join(' · ')}<br><span class="sm">By ${HZY[h]}: AI can do ${c.f[0][h]} of 5 · ${(p => p < 0.34 ? 'barely' : p < 0.67 ? 'somewhat' : 'strongly')(prot(c, h))} protected</span>`;
   const wrap = $('#sc').parentElement.clientWidth;
   tip.style.left = Math.min(x + 26, wrap - 290) + 'px'; tip.style.top = (y + 18) + 'px'; tip.style.opacity = 1; $('#sc').style.cursor = 'pointer';
 });

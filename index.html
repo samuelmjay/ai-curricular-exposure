@@ -435,7 +435,6 @@ function kpis(rows) {
 // ---------- rail ----------
 function rail() {
   const chip = (grp, v, label, on) => `<button class="chip ${on ? 'on' : ''}" data-g="${grp}" data-v="${esc(v)}">${esc(label)}</button>`;
-  const colCounts = {}; C.forEach(c => colCounts[c.col] = (colCounts[c.col] || 0) + 1);
   $('#rail').innerHTML = `
     <div class="fgroup"><div class="glab">Horizon</div>
       <div class="seg" id="hzSeg">${HZ.map((h, i) => `<button data-h="${i}" class="${S.h === i ? 'on' : ''}">${h}</button>`).join('')}</div>
@@ -443,7 +442,7 @@ function rail() {
     ${S.ids ? `<div class="fgroup"><div class="glab">Showing</div><div class="chips"><button class="chip on" data-g="ids">${esc(S.idsLabel)} ×</button></div></div>` : ''}
     ${S.prefix ? `<div class="fgroup"><div class="glab">Prefix</div><div class="chips"><button class="chip on" data-g="prefix">${esc(S.prefix)} ×</button></div></div>` : ''}
     <div class="fgroup"><div class="glab">Rating at ${HZ[S.h]}</div><div class="chips">${[2, 1, 0].map(b => chip('rt', b, BAND[b], S.rt.has(b))).join('')}</div></div>
-    <div class="fgroup"><div class="glab">College</div><div class="chips">${Object.keys(COLS).map(k => chip('col', k, `${k} · ${colCounts[k]}`, S.col.has(k))).join('')}</div></div>
+    <div class="fgroup"><div class="glab">College</div><div class="chips">${Object.keys(COLS).map(k => chip('col', k, k, S.col.has(k))).join('')}</div></div>
     <div class="fgroup"><div class="glab">Why not higher</div><div class="chips">${['lockin', 'found', 'damp', 'task'].map(k => chip('why', k, HELD[k][0], S.why.has(k))).join('')}</div>
       <div class="hz-note">Which protection is holding the course’s rating where it is.</div></div>
     <div class="fgroup"><div class="glab">Level</div><div class="chips">${[['', 'All'], ['lower', 'Lower division'], ['upper', 'Upper division']].map(([v, l]) => chip('lv', v, l, S.lv === v)).join('')}</div></div>

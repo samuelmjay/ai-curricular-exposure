@@ -1,0 +1,11 @@
+# whitelist: publish only the site and its build script
+*
+!.gitignore
+!index.html
+!logo.png
+!README.md
+!build_data.py
+!data/
+!data/courses.js
+!data/reasons/
+!data/reasons/*.json

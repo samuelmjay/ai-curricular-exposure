@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AI Curricular Exposure</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#eaeef3; --surface:#fbfcfe; --surface2:#f1f5f9; --surface3:#e6edf3;
+  --line:#e2e8ee; --line2:#d3dce6;
+  --text:#16222e; --muted:#5b6b7a; --faint:#8a97a3;
+  --navy:#06294d; --navy2:#0d3a66;
+  --accent:#06294d; --accent-ink:#ffffff; --accent-dim:#b9cbe0;
+  --brand:#cc2030;
+  --good:#1f7a4d; --warn:#c07a15; --crit:#cc2030;
+  --good-bg:#e4f1ea; --warn-bg:#f6ecd8; --crit-bg:#fbe0e4;
+  --radius:10px; --radius-sm:7px;
+  --mono:'Roboto',system-ui,Arial,sans-serif;
+  --sans:'Roboto',system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+  --display:'Montserrat','Roboto',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1400px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.15;text-wrap:balance;color:var(--navy)}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Header */
+header.top{position:sticky;top:0;z-index:30;background:rgba(251,252,254,.93);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+header.top::before{content:"";display:block;height:3px;background:var(--brand)}
+.head-in{display:flex;align-items:center;gap:16px;padding-block:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:15px;margin-right:auto;min-width:0}
+.brand .logo{height:46px;width:auto;display:block}
+.brand .bdiv{width:1px;height:34px;background:var(--line2);flex:none}
+.brand .product{font-family:var(--display);font-size:19px;font-weight:700;color:var(--navy);letter-spacing:-.01em;white-space:nowrap}
+.brand .product b{color:var(--brand);font-weight:800}
+.searchbox{position:relative;flex:1;min-width:220px;max-width:420px}
+.searchbox input{width:100%;background:var(--surface);border:1px solid var(--line2);color:var(--text);border-radius:999px;padding:10px 14px 10px 38px;font-size:14px;font-family:inherit}
+.searchbox svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.5}
+.reset{background:var(--surface2);border:1px solid var(--line2);color:var(--muted);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600}
+.reset:hover{color:var(--text);border-color:var(--faint)}
+
+.frame{background:var(--warn-bg);border-left:3px solid var(--warn);padding:12px 15px;border-radius:0 8px 8px 0;font-size:13px;color:#6a4a0f;margin:18px 0 0;line-height:1.6}
+.frame b{color:#5a3f0c}
+
+/* KPI row */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding-block:18px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.kpi .lab{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600}
+.kpi .val{font-family:var(--display);font-size:28px;font-weight:700;margin-top:6px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--navy)}
+.kpi .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.kpi.crit .val{color:var(--crit)}
+.kpi.warn .val{color:var(--warn)}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:274px 1fr;gap:20px;padding-bottom:60px;align-items:start}
+.rail{position:sticky;top:82px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:4px 0;max-height:calc(100vh - 100px);overflow:auto}
+.fgroup{border-bottom:1px solid var(--line);padding:14px 16px}
+.fgroup:last-child{border-bottom:0}
+.glab{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--muted);font-weight:500;transition:.12s;user-select:none}
+.chip:hover{border-color:var(--faint);color:var(--text)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.check{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);cursor:pointer;margin-top:6px}
+.check input{accent-color:var(--accent);width:15px;height:15px}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line2);border-radius:999px;padding:2px}
+.seg button{background:none;border:0;color:var(--muted);font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.rail .seg{display:flex}.rail .seg button{flex:1}
+.hz-note{font-size:11.5px;color:var(--faint);margin-top:8px;line-height:1.45}
+
+/* Panels */
+.main{min-width:0;display:flex;flex-direction:column;gap:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.panel-h{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel-h h2{font-size:14px;font-weight:700;letter-spacing:.01em}
+.panel-h .hint{font-size:12px;color:var(--faint)}
+.panel-h .right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.legend{display:flex;gap:12px;font-size:11.5px;color:var(--muted);align-items:center}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
+.btn{background:var(--surface2);border:1px solid var(--line2);color:var(--text);border-radius:var(--radius-sm);padding:8px 13px;font-size:12.5px;font-weight:600}
+.btn:hover{border-color:var(--faint)}
+.btn.gold{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:5px 10px;font-size:12px}
+
+/* Concern cards */
+.concerns{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:16px}
+.cc{border:1px solid var(--line);border-radius:9px;background:var(--surface);display:flex;flex-direction:column;border-top:3px solid var(--navy)}
+.cc.crit{border-top-color:var(--crit)}.cc.warn{border-top-color:var(--warn)}.cc.good{border-top-color:var(--good)}.cc.slate{border-top-color:#9aa6b8}
+.cc-h{display:flex;align-items:flex-start;gap:12px;padding:13px 15px 6px}
+.cc-k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);font-weight:700}
+.cc.good .cc-k{color:var(--good)}.cc.warn .cc-k{color:var(--warn)}.cc.slate .cc-k{color:var(--muted)}
+.cc-t{font-family:var(--display);font-size:15px;font-weight:700;color:var(--navy);margin-top:3px}
+.cc-n{margin-left:auto;text-align:right;flex:none}
+.cc-n .v{font-family:var(--display);font-size:26px;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1}
+.cc-n .l{font-size:10.5px;color:var(--faint);margin-top:3px}
+.cc-b{padding:2px 15px 8px;font-size:13px;color:var(--muted);line-height:1.55}
+.cc-b b{color:var(--text)}
+.cc-q{margin:0 15px 10px;padding:9px 12px;background:var(--surface2);border-radius:7px;font-size:12.5px;color:var(--text);line-height:1.5}
+.cc-q .ql{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+.cc-q ul{margin:0;padding-left:18px}.cc-q li{margin:3px 0}
+.cc-f{display:flex;align-items:center;gap:10px;padding:10px 15px;border-top:1px solid var(--line);margin-top:auto;flex-wrap:wrap}
+.cc-f .check{margin:0;font-size:12.5px}
+.cc-notes{width:100%;min-height:54px;background:var(--bg);border:1px solid var(--line2);border-radius:7px;font:12.5px var(--sans);color:var(--text);padding:7px 9px;resize:vertical}
+.cc.done{opacity:.72}
+.minis{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.mini{font-size:11.5px;padding:2px 8px;border-radius:6px;background:var(--surface3);color:var(--navy);font-weight:600;cursor:pointer;border:0}
+.mini:hover{background:var(--accent-dim)}
+
+/* Distribution bars */
+.dist{padding:14px 16px 16px;display:flex;flex-direction:column;gap:9px}
+.drow{display:grid;grid-template-columns:150px 1fr 60px;align-items:center;gap:12px;font-size:12.5px;cursor:pointer;border-radius:6px;padding:2px 4px}
+.drow:hover{background:var(--surface2)}
+.drow.on{background:rgba(6,41,77,.06)}
+.drow .nm{font-weight:600;color:var(--text)}.drow .nm span{color:var(--faint);font-weight:400;margin-left:4px}
+.dtrack{display:flex;height:16px;border-radius:4px;overflow:hidden;background:var(--surface2)}
+.dtrack i{display:block;height:100%}
+.b0{background:#7fb89a}.b1{background:#e2b567}.b2{background:var(--crit)}
+.drow .pc{text-align:right;font-weight:700;color:var(--crit);font-variant-numeric:tabular-nums}
+
+/* Tables */
+.tbar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tbar .count{font-size:13px;color:var(--muted)}
+.tbar .count b{color:var(--text)}
+.tbar .right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tbar label{font-size:12px;color:var(--faint)}
+select{background:var(--surface2);border:1px solid var(--line2);color:var(--text);border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;font-family:inherit}
+.tscroll{overflow-x:auto;max-height:640px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:0;background:var(--surface2);text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:10px 12px;white-space:nowrap;cursor:pointer;user-select:none;border-bottom:1px solid var(--line);z-index:1}
+thead th.no{cursor:default}
+thead th.act{color:var(--brand)}
+tbody td{padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--surface2)}
+tbody tr.sel{background:rgba(6,41,77,.07)}
+td.co{font-weight:700;color:var(--navy)}
+td.ti{white-space:normal;color:var(--muted);min-width:200px;max-width:320px;font-size:12.5px}
+td.rt{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;min-width:54px;text-align:center;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:700}
+.pill.r0{background:var(--good-bg);color:var(--good)}
+.pill.r1{background:var(--warn-bg);color:#8a5a10}
+.pill.r2{background:var(--crit-bg);color:var(--crit)}
+.pill.dim{opacity:.45}
+.tag{display:inline-block;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:600;background:var(--surface3);color:var(--muted)}
+.tag.lockin{background:#e7edf5;color:var(--navy)}
+.tag.found{background:var(--warn-bg);color:#8a5a10}
+.tag.damp{background:var(--good-bg);color:#166a41}
+.tag.upd{background:var(--crit-bg);color:var(--crit)}
+.tag.gs{background:#e7edf5;color:var(--navy)}
+.fs{font-variant-numeric:tabular-nums;letter-spacing:.06em;color:var(--muted);font-size:12px}
+.cf0{color:var(--crit);font-weight:700}
+.bar-in{display:inline-block;height:8px;border-radius:3px;background:var(--crit);vertical-align:middle;margin-right:6px}
+.empty{padding:40px 20px;text-align:center;color:var(--faint)}
+.morerow td{text-align:center;color:var(--faint);font-size:12px;cursor:default}
+
+/* Detail drawer */
+.scrim{position:fixed;inset:0;background:rgba(6,41,77,.25);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(640px,100%);background:var(--surface);z-index:41;transform:translateX(100%);transition:.25s;display:flex;flex-direction:column;box-shadow:-10px 0 30px rgba(6,41,77,.12)}
+.drawer.on{transform:none}
+.drawer::before{content:"";display:block;height:3px;background:var(--brand);flex:none}
+.dr-h{padding:16px 20px 12px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.dr-h h3{font-size:19px}
+.dr-h .meta{font-size:12.5px;color:var(--muted);margin-top:4px}
+.dr-x{margin-left:auto;background:none;border:0;font-size:22px;color:var(--faint);line-height:1;padding:2px 6px}
+.dr-x:hover{color:var(--crit)}
+.dr-b{padding:14px 20px 30px;overflow:auto}
+.dr-sec{margin-top:16px}
+.dr-sec h4{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.dr-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.hzc{border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin-bottom:10px}
+.hzc .hh{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--navy);font-size:13.5px}
+.hzc .why{font-size:12px;color:var(--muted);margin:6px 0 0}
+.hzc p{font-size:13px;line-height:1.6;margin:8px 0 0;color:var(--text)}
+.updnote{background:#fdf2e9;border-left:3px solid var(--brand);padding:10px 13px;border-radius:0 8px 8px 0;font-size:12.5px;line-height:1.55;color:var(--text)}
+.ftab{width:100%;border-collapse:collapse;font-size:12.5px}
+.ftab th,.ftab td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center}
+.ftab th:first-child,.ftab td:first-child{text-align:left}
+.ftab thead th{position:static;cursor:default;background:var(--surface2)}
+.ftab .lo{font-weight:700;color:var(--good)}
+
+/* Discussion list */
+.sl-empty{padding:18px 16px;color:var(--faint);font-size:13px}
+.sl-body{padding:6px 16px 16px}
+.sl-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;margin:10px 0 12px}
+.sl-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px}
+.sl-item .cc2{font-weight:700;color:var(--navy);cursor:pointer}
+.sl-item .tt{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.sl-item input{flex:1.3;min-width:120px;border:1px solid var(--line2);border-radius:6px;padding:5px 8px;font:12px var(--sans);background:var(--surface)}
+.sl-item .x{color:var(--faint);background:none;border:0;font-size:15px;line-height:1;padding:2px 4px}
+.sl-item .x:hover{color:var(--crit)}
+.sl-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Methodology */
+.method{padding:6px 20px 24px;max-width:880px}
+.method-lead{font-size:14px;color:var(--text);line-height:1.65;margin:14px 0 0}
+.method-lead b{color:var(--navy)}
+.method-block{border-top:1px solid var(--line);padding-top:18px;margin-top:22px}
+.method-block h3{font-size:16px;margin:0 0 8px}
+.method-block p{font-size:13.5px;color:var(--muted);line-height:1.6;margin:8px 0}
+.method-block p b,.method-rules li b{color:var(--text)}
+.factors{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0}
+.fcard{border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.fcard .fn{font-weight:700;color:var(--navy);font-size:13.5px}
+.fcard .fd{font-size:12.5px;color:var(--muted);margin:7px 0 0;line-height:1.5}
+.formula{font-size:13px;background:var(--surface2);border:1px solid var(--line);color:var(--navy);padding:12px 14px;border-radius:8px;margin:12px 0;line-height:1.75;font-weight:600}
+.method-rules{list-style:none;padding:0;margin:12px 0;display:flex;flex-direction:column;gap:9px}
+.method-rules li{font-size:13px;color:var(--muted);line-height:1.55}
+.srcs{margin:10px 0 0;padding-left:20px;font-size:12.5px;color:var(--muted);line-height:1.55}
+.srcs li{margin:5px 0}
+.srcs .flag{font-size:10.5px;font-weight:700;color:#8a5a10;background:var(--warn-bg);padding:1px 6px;border-radius:5px;margin-left:4px}
+.howlink{font-size:12px;color:var(--brand);font-weight:600;text-decoration:none}
+.howlink:hover{text-decoration:underline}
+.foot{color:var(--faint);font-size:11.5px;padding:8px 2px 30px;line-height:1.6}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);padding:10px 18px;border-radius:999px;font-weight:600;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}
+
+@media(max-width:1100px){.concerns{grid-template-columns:1fr}}
+@media(max-width:960px){
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .layout{grid-template-columns:1fr}
+  .rail{position:static;max-height:none}
+}
+@media(max-width:640px){
+  .wrap{padding-inline:16px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .brand .logo{height:36px}
+  .brand .product{font-size:15px}
+  .factors{grid-template-columns:1fr}
+  .drow{grid-template-columns:96px 1fr 44px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{header.top,.rail,.scrim,.drawer,.toast{display:none!important}.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap head-in">
+    <div class="brand">
+      <img class="logo" src="logo.png" alt="MSU Denver Online Learning" width="1320" height="550">
+      <span class="bdiv"></span>
+      <span class="product">AI Curricular <b>Exposure</b></span>
+    </div>
+    <div class="searchbox">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="text" placeholder="Search course, title, prefix, or department…" autocomplete="off" aria-label="Search courses">
+    </div>
+    <button class="reset" id="reset">Reset filters</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="frame"><b>Read this first.</b> Each course is rated High, Medium, or Low on one question: <b>how far AI could erode the labor-market reason a student takes the course</b>, because AI will competently do the work tasks the course prepares students for. It is <b>not</b> a judgment of a course’s educational value, its quality, or whether it should be cut. Ratings come from five factor scores and a fixed rule, not case-by-case judgment. The analysis covers the MSU Denver 2026–27 undergraduate catalog and was revised September 21, 2026. <a class="howlink" href="#methodology">How the ratings work ↓</a></div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="layout">
+    <aside class="rail" id="rail" aria-label="Filters"></aside>
+
+    <div class="main">
+      <section class="panel" id="concernPanel">
+        <div class="panel-h">
+          <h2>Areas of concern &amp; things to think about</h2>
+          <span class="hint">a discussion agenda. “Show these courses” filters everything below</span>
+          <div class="right"><button class="btn sm" id="agendaReset">Clear discussion marks</button></div>
+        </div>
+        <div class="concerns" id="concerns"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-h">
+          <h2>Where exposure concentrates</h2>
+          <span class="hint" id="distHint"></span>
+          <div class="right">
+            <div class="seg" id="distBy"><button data-v="col" class="on">By college</button><button data-v="pre">By prefix</button></div>
+            <div class="legend"><span><i class="b0"></i>Low</span><span><i class="b1"></i>Medium</span><span><i class="b2"></i>High</span></div>
+          </div>
+        </div>
+        <div class="dist" id="dist"></div>
+      </section>
+
+      <section class="panel" id="coursePanel">
+        <div class="tbar">
+          <div class="count"><b id="tcount">0</b> courses match</div>
+          <div class="right">
+            <label for="sort">Sort</label>
+            <select id="sort">
+              <option value="exp">Most exposed at horizon ↓</option>
+              <option value="gap">Largest gap: task vs rating ↓</option>
+              <option value="traj">Steepest rise 24 mo → 10 yr ↓</option>
+              <option value="course">Course code A–Z</option>
+            </select>
+            <button class="btn gold" id="addAll">Add shown to discussion list</button>
+          </div>
+        </div>
+        <div class="tscroll">
+          <table>
+            <thead><tr>
+              <th class="no">Course</th><th class="no">Title</th><th class="no">College</th>
+              <th class="no">24 mo</th><th class="no">5 yr</th><th class="no">10 yr</th>
+              <th class="no" title="F1 task automatability · F2 verification burden · F3 embodiment · F4 institutional lock-in · F5 foundational, at the selected horizon">F1–F5</th>
+              <th class="no">Why not higher</th><th class="no">Conf.</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="shortlist"></section>
+
+      <section class="panel" id="methodology">
+        <div class="panel-h"><h2>How the ratings work</h2><span class="hint">every term on this page, defined</span></div>
+        <div class="method" id="methodBody"></div>
+      </section>
+
+      <p class="foot" id="foot"></p>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Course detail" aria-hidden="true">
+  <div class="dr-h"><div><h3 id="drT"></h3><div class="meta" id="drM"></div></div><button class="dr-x" id="drX" aria-label="Close">×</button></div>
+  <div class="dr-b" id="drB"></div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script src="data/courses.js"></script>
+<script>
+(() => {
+const C = window.COURSES;
+const BAND = ['Low', 'Medium', 'High'];
+const HZ = ['24 mo', '5 yr', '10 yr'];
+const HZY = ['2028', '2031', '2036'];
+const COLS = { CLAS: 'Letters, Arts & Sciences', CHHS: 'Health & Human Sciences', CACED: 'Aerospace, Computing, Engineering & Design', COB: 'Business', SOE: 'Education', SOH: 'Hospitality', Honors: 'Honors' };
+const HELD = { lockin: ['Lock-in cap', 'lockin', 'Held down by licensure, accreditation, or gtPathways: the rules, not the task'],
+               found: ['Foundational cap', 'found', 'Held down because later required courses build on it'],
+               damp: ['Human oversight', 'damp', 'Verification burden or embodiment keeps a knowledgeable person in the loop'],
+               task: ['Task', '', 'The work tasks themselves are not highly automatable'] };
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = { get(k, d) { try { const v = localStorage.getItem('ace:' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+                set(k, v) { try { localStorage.setItem('ace:' + k, JSON.stringify(v)); } catch {} } };
+const byId = Object.fromEntries(C.map(c => [c.id, c]));
+
+// why a course sits where it does at horizon h
+function why(c, h) {
+  if (c.held[h]) return c.held[h];
+  if (c.damp[h]) return 'damp';
+  return c.r[h] < 2 ? 'task' : '';
+}
+
+// ---------- state ----------
+const S = { h: 1, q: '', col: new Set(), rt: new Set(), lv: '', why: new Set(), cf: new Set(), gs: false, upd: false, ids: null, idsLabel: '', sort: 'exp', distBy: 'col', prefix: '' };
+const initS = JSON.stringify({ ...S, col: [], rt: [], why: [], cf: [] });
+
+function filtered(ignore = {}) {
+  const q = S.q.trim().toLowerCase();
+  return C.filter(c => {
+    if (S.ids && !S.ids.has(c.id)) return false;
+    if (!ignore.col && S.col.size && !S.col.has(c.col)) return false;
+    if (S.prefix && c.p !== S.prefix) return false;
+    if (S.rt.size && !S.rt.has(c.r[S.h])) return false;
+    if (S.lv && c.lv !== S.lv) return false;
+    if (S.why.size && !S.why.has(why(c, S.h))) return false;
+    if (S.cf.size && !S.cf.has(c.cf)) return false;
+    if (S.gs && !c.gs) return false;
+    if (S.upd && !c.u) return false;
+    if (q && !(c.id.toLowerCase().includes(q) || c.t.toLowerCase().includes(q) || c.dept.toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+
+// ---------- KPIs ----------
+function kpis(rows) {
+  const n = rows.length || 1, cnt = (h, b) => rows.filter(c => c.r[h] === b).length;
+  const pct = x => (100 * x / n).toFixed(1) + '%';
+  const held = rows.filter(c => c.held[S.h] === 'lockin').length;
+  const low = rows.filter(c => c.cf === 0).length;
+  const k = [
+    ['Courses in view', rows.length.toLocaleString(), S.ids || S.col.size || S.q || S.rt.size || S.prefix ? 'of 3,219 rated' : '2026–27 catalog, 7 colleges', ''],
+    ['High · 24 months', cnt(0, 2), pct(cnt(0, 2)) + ' · by 2028', 'crit'],
+    ['High · 5 years', cnt(1, 2).toLocaleString(), pct(cnt(1, 2)) + ' · by 2031', 'crit'],
+    ['High · 10 years', cnt(2, 2).toLocaleString(), pct(cnt(2, 2)) + ' · by 2036, widest uncertainty', 'crit'],
+    ['Held by rules · ' + HZ[S.h], held.toLocaleString(), 'rating capped by lock-in, not the task', 'warn'],
+    ['Low confidence', low.toLocaleString(), 'needs faculty review first', ''],
+  ];
+  $('#kpis').innerHTML = k.map(([l, v, s, cls]) => `<div class="kpi ${cls}"><div class="lab">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`).join('');
+}
+
+// ---------- rail ----------
+function rail() {
+  const chip = (grp, v, label, on) => `<button class="chip ${on ? 'on' : ''}" data-g="${grp}" data-v="${esc(v)}">${esc(label)}</button>`;
+  const colCounts = {}; C.forEach(c => colCounts[c.col] = (colCounts[c.col] || 0) + 1);
+  $('#rail').innerHTML = `
+    <div class="fgroup"><div class="glab">Horizon</div>
+      <div class="seg" id="hzSeg">${HZ.map((h, i) => `<button data-h="${i}" class="${S.h === i ? 'on' : ''}">${h}</button>`).join('')}</div>
+      <div class="hz-note">Drives the rating filter, “why not higher,” and the factor columns. 24 months: near-certain capability, slow adoption. 10 years: widest uncertainty.</div></div>
+    ${S.ids ? `<div class="fgroup"><div class="glab">Showing</div><div class="chips"><button class="chip on" data-g="ids">${esc(S.idsLabel)} ×</button></div></div>` : ''}
+    ${S.prefix ? `<div class="fgroup"><div class="glab">Prefix</div><div class="chips"><button class="chip on" data-g="prefix">${esc(S.prefix)} ×</button></div></div>` : ''}
+    <div class="fgroup"><div class="glab">Rating at ${HZ[S.h]}</div><div class="chips">${[2, 1, 0].map(b => chip('rt', b, BAND[b], S.rt.has(b))).join('')}</div></div>
+    <div class="fgroup"><div class="glab">College</div><div class="chips">${Object.keys(COLS).map(k => chip('col', k, `${k} · ${colCounts[k]}`, S.col.has(k))).join('')}</div></div>
+    <div class="fgroup"><div class="glab">Why not higher</div><div class="chips">${['lockin', 'found', 'damp', 'task'].map(k => chip('why', k, HELD[k][0], S.why.has(k))).join('')}</div>
+      <div class="hz-note">Which protection is holding the course’s rating where it is.</div></div>
+    <div class="fgroup"><div class="glab">Level</div><div class="chips">${[['', 'All'], ['lower', 'Lower division'], ['upper', 'Upper division']].map(([v, l]) => chip('lv', v, l, S.lv === v)).join('')}</div></div>
+    <div class="fgroup"><div class="glab">Confidence</div><div class="chips">${[[2, 'High'], [1, 'Medium'], [0, 'Low']].map(([v, l]) => chip('cf', v, l, S.cf.has(v))).join('')}</div></div>
+    <div class="fgroup">
+      <label class="check"><input type="checkbox" id="fGs" ${S.gs ? 'checked' : ''}> General Studies courses only</label>
+      <label class="check"><input type="checkbox" id="fUpd" ${S.upd ? 'checked' : ''}> Changed in Sept 2026 update</label>
+    </div>`;
+}
+
+// ---------- concerns ----------
+function concerns() {
+  const ids = f => C.filter(f).map(c => c.id);
+  const pre = {}; C.forEach(c => { (pre[c.p] = pre[c.p] || []).push(c); });
+  const hot = Object.entries(pre).filter(([, v]) => v.length >= 5).map(([p, v]) => [p, v.length, v.filter(c => c.r[2] === 2).length / v.length])
+    .filter(x => x[2] >= 0.7).sort((a, b) => b[2] - a[2]);
+  const lockSet = ids(c => c.held[1] === 'lockin' || c.held[2] === 'lockin');
+  const lockHighTask = ids(c => c.held[1] === 'lockin' && c.task[1] === 2);
+  const foundSet = ids(c => c.held.some(x => x === 'found'));
+  const dampSet = ids(c => c.damp[2] && c.task[2] === 2);
+  const nearSet = ids(c => c.r[0] === 2);
+  const lowSet = ids(c => c.cf === 0);
+  const updSet = ids(c => c.u);
+  const gsHigh = ids(c => c.gs && c.task[1] === 2);
+  const L = [
+    { k: 'Nearest term', cls: 'crit', t: 'Courses rated High by 2028', set: nearSet, l: 'High at 24 mo',
+      b: `These are the only courses where the analysis expects the job-market reason for the course to erode <b>within two years</b>. They cluster in programming, production design, and routine business processing. Fourteen joined the list in the September 2026 update, after new data showed hiring of young workers falling in those job types.`,
+      q: ['Which of these are required in a major, and which are electives?', 'Are the departments already redesigning them toward AI-assisted practice?', 'How many students do they reach each year? (Enrollment is not in this analysis.)'] },
+    { k: 'Held by the rules', cls: 'warn', t: 'Protected by licensure or gtPathways, not by the work', set: lockSet, l: 'lock-in holds at 5 or 10 yr',
+      b: `For these courses the task itself is exposed, but a licensure, accreditation, or gtPathways requirement holds the rating down. <b>${lockHighTask.length}</b> would be High at 5 years on task alone. When a rule changes, these courses can move quickly. Colorado has already dropped the CPA 150-hour requirement (SB26-076, effective 2027).`,
+      q: ['Which programs depend on a single rule for this protection?', 'Who is tracking licensure and accreditation changes, and how does that reach curriculum committees?', 'Should courses held up only by a rule be redesigned before the rule changes?'] },
+    { k: 'Things to think about', cls: 'slate', t: 'Foundational, but the tasks are automatable', set: foundSet, l: 'foundational cap binds',
+      b: `These courses are capped because later required courses build on them, even though the tasks they teach are highly exposed (introductory programming is the clearest case). New employer data points the other way from "cut them": the routine work where beginners used to learn on the job is disappearing, which makes this teaching <b>more</b> necessary.`,
+      q: ['Are these courses teaching students to judge and check AI output, or only to produce it?', 'Where in each major does verification get taught explicitly?'] },
+    { k: 'Durable core', cls: 'good', t: 'Where human oversight and presence stay necessary', set: dampSet, l: 'task High at 10 yr, held by oversight',
+      b: `These courses’ tasks are highly exposed by 2036, but <b>verification burden</b> (the cost of AI mistakes that are hard to spot) or <b>embodiment</b> (physical or in-person work) keeps a knowledgeable person in the loop. A 2026 KPMG and UT Austin study found that about a quarter of early-career staff performed <b>worse</b> than the AI working alone, because they could not direct or check it.`,
+      q: ['Could these courses make “directing and checking AI” an explicit learning outcome?', 'Is this a message to share with students and advisors: these skills hold their value?'] },
+    { k: 'Program level', cls: 'crit', t: 'Prefixes where most courses are High by 2036', set: hot.flatMap(([p]) => pre[p].map(c => c.id)), l: 'courses in these prefixes',
+      b: `In these prefixes, at least 70% of courses are rated High at 10 years (counting only prefixes with 5 or more courses). At that scale the question is about the program, not individual courses. The 10-year horizon has the widest uncertainty, so treat this as a direction, not a forecast.`,
+      q: ['Which of these programs have advisory boards or employer partners who can check this against local hiring?', 'Is a program review cycle coming up where this could be raised routinely rather than as an alarm?'],
+      minis: hot.map(([p, n, s]) => `<button class="mini" data-prefix="${p}">${p} ${(s * 100).toFixed(0)}%</button>`).join('') },
+    { k: 'General education', cls: 'warn', t: 'General Studies courses with exposed tasks', set: gsHigh, l: 'GS, task High at 5 yr',
+      b: `These General Studies courses have highly automatable tasks, but gtPathways, Colorado’s statewide transfer agreement, holds them at Medium or lower. Their justification rests on breadth and transfer rather than job tasks. That justification is legitimate, but it is not what this analysis measures.`,
+      q: ['Does the General Studies committee want this list?', 'What is the case for these courses that doesn’t depend on job tasks, and is it written down?'] },
+    { k: 'Before any decision', cls: 'slate', t: 'Low-confidence ratings', set: lowSet, l: 'low confidence',
+      b: `These ratings rest on thin catalog descriptions, mixed task profiles, or unusually wide 10-year ranges. In a blind re-rating of 161 courses, <b>79.1%</b> of ratings matched exactly and <b>97.1%</b> were within one band. Patterns across many courses are reliable; single-course ratings deserve faculty review.`,
+      q: ['Should departments review low-confidence ratings before any list is shared outside this group?'] },
+    { k: 'What changed', cls: 'slate', t: 'September 2026 evidence update', set: updSet, l: 'courses re-scored',
+      b: `New data from May to September 2026 raised the task-automatability score of 30 courses in five job types: routine programming, production design, bookkeeping, customer service, and office processing. <b>14 ratings moved</b>, all from Medium to High at 24 months. The strongest source is Stanford’s payroll data: employment of 22-to-25-year-olds in AI-exposed jobs is 19% below trend, driven by less hiring rather than layoffs.`,
+      q: ['Watch items: Colorado CPA rules (Oct 21, 2026), ABET computing AI criterion (fall 2027), HLC AI guidelines (early 2027).'] },
+  ];
+  const marks = store.get('marks', {}), notes = store.get('notes', {});
+  $('#concerns').innerHTML = L.map((x, i) => `
+    <div class="cc ${x.cls} ${marks[i] ? 'done' : ''}">
+      <div class="cc-h"><div><div class="cc-k">${x.k}</div><div class="cc-t">${x.t}</div></div>
+        <div class="cc-n"><div class="v">${x.set.length.toLocaleString()}</div><div class="l">${x.l}</div></div></div>
+      <div class="cc-b">${x.b}${x.minis ? `<div class="minis">${x.minis}</div>` : ''}</div>
+      <div class="cc-q"><div class="ql">To discuss</div><ul>${x.q.map(q => `<li>${q}</li>`).join('')}</ul></div>
+      <div class="cc-f">
+        <button class="btn sm gold" data-show="${i}">Show these courses</button>
+        <label class="check"><input type="checkbox" data-mark="${i}" ${marks[i] ? 'checked' : ''}> Discussed</label>
+        <textarea class="cc-notes" data-note="${i}" placeholder="Notes (saved in this browser only)">${esc(notes[i] || '')}</textarea>
+      </div>
+    </div>`).join('');
+  concerns.L = L;
+}
+
+// ---------- distribution ----------
+function dist(rows) {
+  const h = S.h;
+  const groups = {};
+  if (S.distBy === 'col') rows.forEach(c => (groups[c.col] = groups[c.col] || [0, 0, 0])[c.r[h]]++);
+  else rows.forEach(c => (groups[c.p] = groups[c.p] || [0, 0, 0])[c.r[h]]++);
+  let list = Object.entries(groups).map(([k, v]) => [k, v, v[0] + v[1] + v[2]]);
+  if (S.distBy === 'pre') list = list.filter(x => x[2] >= 5 || S.prefix === x[0]);
+  list.sort((a, b) => b[1][2] / b[2] - a[1][2] / a[2] || b[2] - a[2]);
+  if (S.distBy === 'pre') list = list.slice(0, 30);
+  $('#distHint').textContent = `share of courses by rating at ${HZ[h]} (${HZY[h]})${S.distBy === 'pre' ? ' · top 30 prefixes with 5+ courses, by % High' : ''} · click a row to filter`;
+  $('#dist').innerHTML = list.length ? list.map(([k, v, n]) => {
+    const on = S.distBy === 'col' ? S.col.size === 1 && S.col.has(k) : S.prefix === k;
+    const label = S.distBy === 'col' ? `${k}<span>${esc(COLS[k])} · ${n}</span>` : `${k}<span>${n} courses</span>`;
+    return `<div class="drow ${on ? 'on' : ''}" data-k="${esc(k)}" title="${v[0]} Low · ${v[1]} Medium · ${v[2]} High">
+      <div class="nm">${label}</div>
+      <div class="dtrack">${v.map((x, b) => `<i class="b${b}" style="width:${100 * x / n}%"></i>`).join('')}</div>
+      <div class="pc">${(100 * v[2] / n).toFixed(0)}% High</div></div>`;
+  }).join('') : '<div class="empty">No courses match these filters.</div>';
+}
+
+// ---------- table ----------
+const pill = (b, dim) => `<span class="pill r${b} ${dim ? 'dim' : ''}">${BAND[b]}</span>`;
+let shown = 200;
+function table(rows) {
+  const h = S.h;
+  const key = {
+    exp: c => -(c.r[h] * 100 + c.task[h] * 10 + c.f[0][h]),
+    gap: c => -((c.task[h] - c.r[h]) * 10 + c.f[0][h]),
+    traj: c => -((c.r[2] - c.r[0]) * 10 + c.r[2]),
+    course: () => 0,
+  }[S.sort];
+  rows = rows.slice().sort((a, b) => key(a) - key(b) || a.id.localeCompare(b.id, undefined, { numeric: true }));
+  $('#tcount').textContent = rows.length.toLocaleString();
+  const tb = $('#tbody');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="9" class="empty">No courses match these filters.</td></tr>'; return; }
+  tb.innerHTML = rows.slice(0, shown).map(c => {
+    const w = why(c, h);
+    const tag = w && w !== 'task' ? `<span class="tag ${HELD[w][1]}" title="${HELD[w][2]}">${HELD[w][0]}</span>` : w === 'task' ? '<span class="tag">Task</span>' : '';
+    return `<tr data-id="${esc(c.id)}" class="${drawerId === c.id ? 'sel' : ''}">
+      <td class="co">${esc(c.id)}</td>
+      <td class="ti">${esc(c.t)} ${c.gs ? '<span class="tag gs">GS</span>' : ''} ${c.uc ? '<span class="tag upd" title="Rating changed in the Sept 2026 update">Updated</span>' : ''}</td>
+      <td>${c.col}</td>
+      ${[0, 1, 2].map(i => `<td>${pill(c.r[i], i !== h)}</td>`).join('')}
+      <td class="fs">${c.f.map(f => f[h]).join(' ')}</td>
+      <td>${tag}</td>
+      <td class="${c.cf === 0 ? 'cf0' : ''}">${['Low', 'Med', 'High'][c.cf]}</td></tr>`;
+  }).join('') + (rows.length > shown ? `<tr class="morerow"><td colspan="9"><button class="btn sm" id="more">Show ${Math.min(200, rows.length - shown)} more of ${rows.length - shown} remaining</button></td></tr>` : '');
+}
+
+// ---------- drawer ----------
+let drawerId = null;
+const reasonCache = {};
+async function reasons(prefix) {
+  if (!reasonCache[prefix]) reasonCache[prefix] = fetch(`data/reasons/${encodeURIComponent(prefix)}.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  return reasonCache[prefix];
+}
+function whyText(c, h) {
+  const w = why(c, h), t = BAND[c.task[h]];
+  if (w === 'lockin') return `Task alone would rate ${t}; licensure, accreditation, or gtPathways lock-in caps it.`;
+  if (w === 'found') return `Task alone would rate ${t}; capped because later required courses build on it.`;
+  if (w === 'damp') return `Task alone would rate ${t}; verification burden or embodiment lowers it one step.`;
+  if (w === 'task') return `The applied tasks themselves score ${c.f[0][h]} of 5 for automatability.`;
+  return 'Highly automatable tasks, and nothing in the rule holds the rating down.';
+}
+async function openDrawer(id) {
+  const c = byId[id]; if (!c) return;
+  drawerId = id;
+  $('#drT').textContent = `${c.id} — ${c.t}`;
+  $('#drM').innerHTML = `${esc(COLS[c.col])} · ${esc(c.dept)} · ${c.cr} cr · ${c.lv} division${c.gs ? ' · General Studies' : ''} · confidence <b>${['low', 'medium', 'high'][c.cf]}</b>`;
+  const inList = list().some(x => x.id === id);
+  $('#drB').innerHTML = `<div class="sl-actions"><button class="btn sm ${inList ? '' : 'gold'}" id="drAdd">${inList ? 'On discussion list ✓' : 'Add to discussion list'}</button></div><div id="drRest" class="dr-sec"><div class="dr-desc">Loading…</div></div>`;
+  $('#drawer').classList.add('on'); $('#scrim').classList.add('on'); $('#drawer').setAttribute('aria-hidden', 'false');
+  document.querySelectorAll('#tbody tr').forEach(tr => tr.classList.toggle('sel', tr.dataset.id === id));
+  let R;
+  try { R = (await reasons(c.p))[id]; } catch (e) { R = null; }
+  if (drawerId !== id) return;
+  const ft = `<table class="ftab"><thead><tr><th>Factor</th>${HZ.map(x => `<th>${x}</th>`).join('')}</tr></thead><tbody>${
+    [['F1 Task automatability', 'higher = more exposed'], ['F2 Verification burden', '≤2 protects'], ['F3 Embodiment & presence', '≤2 protects'], ['F4 Institutional lock-in', '≤3 caps'], ['F5 Foundational role', '≤2 caps']]
+      .map(([n, s], i) => `<tr><td>${n} <span style="color:var(--faint)">· ${s}</span></td>${c.f[i].map(v => `<td class="${(i === 1 || i === 2) && v <= 2 || i === 3 && v <= 3 || i === 4 && v <= 2 ? 'lo' : ''}">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  $('#drRest').innerHTML = `
+    ${R && R.n ? `<div class="dr-sec"><div class="updnote">${esc(R.n)}</div></div>` : ''}
+    <div class="dr-sec"><h4>Catalog description</h4><div class="dr-desc">${R ? esc(R.d) || '—' : 'Could not load. The detail files need the site to be served over the web, not opened as a local file.'}</div></div>
+    <div class="dr-sec"><h4>Rating at each horizon</h4>${[0, 1, 2].map(h => `
+      <div class="hzc"><div class="hh">${HZ[h]} (${HZY[h]}) ${pill(c.r[h])}</div>
+      <div class="why">${whyText(c, h)}</div>
+      ${R ? `<p>${esc(R.r[h])}</p>` : ''}</div>`).join('')}</div>
+    <div class="dr-sec"><h4>Factor scores (1–5)</h4>${ft}</div>`;
+}
+function closeDrawer() {
+  drawerId = null;
+  $('#drawer').classList.remove('on'); $('#scrim').classList.remove('on'); $('#drawer').setAttribute('aria-hidden', 'true');
+  document.querySelectorAll('#tbody tr.sel').forEach(tr => tr.classList.remove('sel'));
+}
+
+// ---------- discussion list ----------
+const list = () => store.get('list', []);
+function setList(l) { store.set('list', l); shortlist(); }
+function shortlist() {
+  const l = list();
+  const el = $('#shortlist');
+  const head = `<div class="panel-h"><h2>Discussion list</h2><span class="hint">courses to raise with departments. Notes are saved in this browser only; use “Copy as text” to share</span></div>`;
+  if (!l.length) { el.innerHTML = head + '<div class="sl-empty">Nothing here yet. Open any course and choose “Add to discussion list,” or add everything currently shown in the table.</div>'; return; }
+  el.innerHTML = head + `<div class="sl-body"><div class="sl-list">${l.map(x => { const c = byId[x.id]; return `
+    <div class="sl-item"><span class="cc2" data-open="${esc(x.id)}">${esc(x.id)}</span>${pill(c.r[0])}${pill(c.r[1])}${pill(c.r[2])}
+      <span class="tt">${esc(c.t)}</span>
+      <input data-slnote="${esc(x.id)}" value="${esc(x.note || '')}" placeholder="note…" aria-label="Note for ${esc(x.id)}">
+      <button class="x" data-rm="${esc(x.id)}" aria-label="Remove">×</button></div>`; }).join('')}</div>
+    <div class="sl-actions"><button class="btn gold" id="slCopy">Copy as text</button><button class="btn" id="slCsv">Download CSV</button><button class="btn" id="slClear">Clear list</button></div></div>`;
+}
+function listText() {
+  return list().map(x => { const c = byId[x.id]; return `${c.id} — ${c.t} (${COLS[c.col]}): ${c.r.map((b, i) => HZ[i] + ' ' + BAND[b]).join(', ')}${x.note ? ' — ' + x.note : ''}`; }).join('\n');
+}
+
+// ---------- methodology ----------
+const SRC = [
+  ['Stanford Digital Economy Lab, “Canaries in the Coal Mine?” August 2026 update', 'https://digitaleconomy.stanford.edu/app/uploads/2026/08/Canaries_August2026.pdf'],
+  ['U.S. Bureau of Labor Statistics, Employment Projections 2025–2035 (Aug 27, 2026)', 'https://www.bls.gov/news.release/ecopro.nr0.htm'],
+  ['U.S. Census Bureau, Business Trends and Outlook Survey (Sept 10, 2026 release)', 'https://www.census.gov/hfp/btos/downloads/National.xlsx'],
+  ['St. Louis Fed, “Does generative AI save time at work?” (Aug 27, 2026)', 'https://fredblog.stlouisfed.org/2026/08/does-generative-ai-save-time-at-work/'],
+  ['METR, Task-Completion Time Horizons of Frontier AI Models', 'https://metr.org/time-horizons/'],
+  ['Center for AI Safety & Scale AI, Remote Labor Index update (July 1, 2026)', 'https://safe.ai/blog/significant-increase-in-digital-labor-automation'],
+  ['PwC, 2026 Global AI Jobs Barometer (June 15, 2026)', 'https://www.pwc.com/gx/en/issues/artificial-intelligence/job-barometer/2026/2026-global-ai-jobs-barometer-global-findings.pdf'],
+  ['KPMG & UT Austin McCombs, Shaping Early-Career Success in the Age of AI (July 23, 2026)', 'https://news.mccombs.utexas.edu/research/shaping-early-career-success-in-the-age-of-ai/'],
+  ['Yale Budget Lab, Tracking the Impact of AI on the Labor Market (Sept 15, 2026)', 'https://budgetlab.yale.edu/research/tracking-impact-ai-labor-market'],
+  ['Lambert & Schindler, “The Broken Ladder,” Univ. of Warwick CAGE WP 808 (June 1, 2026)', 'https://warwick.ac.uk/fac/soc/economics/research/centres/cage/publications/workingpapers/2026/the_broken_ladder_ai_remote_work_and_early_career_hiring/'],
+  ['OpenAI, The AI Jobs Transition Framework (Apr 30, 2026)', 'https://cdn.openai.com/pdf/the-ai-jobs-transition-framework_report.pdf', 'before window'],
+  ['Colorado SB26-076, CPA licensure pathways (effective Aug 12, 2026)', 'https://leg.colorado.gov/bills/sb26-076'],
+  ['Colorado HB26-1195, Psychotherapy AI Restrictions (effective Aug 12, 2026)', 'https://leg.colorado.gov/bills/hb26-1195'],
+  ['AACSB, 2026 Global Standards for Business Education (effective July 1, 2026)', 'https://www.aacsb.edu/-/media/documents/accreditation/2026/2026-global-standards.pdf'],
+  ['CDHE, Guaranteed Transfer (GT) Pathways', 'https://cdhe.colorado.gov/guaranteed-transfer-pathways-general-education-curriculum'],
+  ['Anthropic Economic Index', 'https://www.anthropic.com/research/economic-index-june-2026-report', 'baseline'],
+  ['Eloundou et al., “GPTs are GPTs” (task exposure)', 'https://arxiv.org/abs/2303.10130', 'baseline'],
+  ['Dell’Acqua et al., “Navigating the Jagged Technological Frontier”', 'https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4573321', 'baseline'],
+  ['O*NET Content Model (work activities)', 'https://www.onetcenter.org/content.html', 'baseline'],
+];
+function method() {
+  $('#methodBody').innerHTML = `
+  <p class="method-lead">Every course in the 2026–27 undergraduate catalog (<b>3,219 courses</b>, seven colleges and schools) is rated at three <b>horizons</b>: 24 months (2028), 5 years (2031), and 10 years (2036). A horizon combines three clocks that move at different speeds: what AI can do (<b>capability</b>), how widely employers use it (<b>adoption</b>), and how quickly curricula and licensure rules change (<b>institutional change</b>).</p>
+  <div class="method-block"><h3>The five factors (each scored 1–5 per horizon)</h3>
+    <div class="factors">
+      <div class="fcard"><div class="fn">F1 · Task automatability</div><div class="fd">How much of the work the course prepares students for AI can do <b>and</b> employers actually use it for by that horizon. It is mapped from the course description to O*NET work activities (the Department of Labor’s catalog of job tasks). Higher = more exposed.</div></div>
+      <div class="fcard"><div class="fn">F2 · Verification burden</div><div class="fd">Whether checking AI’s work still takes someone who knows this material. It scores low (protective) where mistakes are costly or hard to spot.</div></div>
+      <div class="fcard"><div class="fn">F3 · Embodiment &amp; presence</div><div class="fd">Whether the work is physical, clinical, in person, or needs real-time judgment between people. Lower = more embodied = protective.</div></div>
+      <div class="fcard"><div class="fn">F4 · Institutional lock-in</div><div class="fd">Whether licensure, accreditation, state law, or <b>gtPathways</b> (Colorado’s statewide general-education transfer agreement) requires the course regardless of AI. Lower = more locked in.</div></div>
+      <div class="fcard"><div class="fn">F5 · Foundational role</div><div class="fd">Whether later required courses build on this one. Lower = more foundational.</div></div>
+    </div></div>
+  <div class="method-block"><h3>The rule that turns factors into a rating</h3>
+    <p>A fixed rule, applied the same way to every course, so the same scores always give the same rating:</p>
+    <div class="formula">1 · Start from F1: 4–5 → High · 3 → Medium · 1–2 → Low<br>2 · If F2 ≤ 2 or F3 ≤ 2, drop one step (human oversight)<br>3 · Lock-in cap: F4 = 1 → Low / Low / Medium · F4 = 2 → Low / Medium / Medium · F4 = 3 → Medium at 24 mo<br>4 · Foundational cap: F5 = 1 → Medium at all horizons · F5 = 2 → Medium at 24 mo<br>5 · Final rating = the lowest result from steps 1–4</div>
+    <p>“<b>Why not higher</b>” in the table shows which step holds a course where it is. “<b>Task</b>” means the work itself isn’t very automatable. The other labels mean the task is more exposed than the rating, and a protection is holding it down.</p></div>
+  <div class="method-block"><h3>What the ratings mean</h3>
+    <ul class="method-rules">
+      <li><span class="pill r2">High</span> The job-market reason to require the course is largely gone by that horizon: AI does the applied work well, and nothing strongly keeps a person in the loop.</li>
+      <li><span class="pill r1">Medium</span> Real erosion, or the course’s role shifts from doing the work to directing and checking it.</li>
+      <li><span class="pill r0">Low</span> The job-market reason stays largely intact.</li>
+    </ul>
+    <p>A rating says nothing about a course’s intellectual, civic, or creative value, its quality, or its enrollment. Many courses are justified on grounds this analysis does not measure.</p></div>
+  <div class="method-block"><h3>September 2026 update</h3>
+    <p>New evidence from May 21 to September 21, 2026 was applied through the same rule. Two findings were new. First, the <b>first direct measurements</b> of AI replacing work: Stanford payroll data show employment of 22-to-25-year-olds in AI-exposed jobs <b>19% below trend</b>. “Below trend” means fewer workers than expected, driven by less hiring, not layoffs. Second, new BLS projections name AI as reducing demand for office and administrative jobs (−4.0%). Both are <b>descriptive, not causal</b>: the pattern coincides with AI adoption but does not prove AI caused it.</p>
+    <p>As a result, the task-automatability score went up one step for <b>30 courses</b> whose applied work is routine execution in those job types, and <b>14 ratings changed</b> (Medium → High at 24 months). Only about 23% of U.S. firms use AI (Census, August 2026), so no across-the-board increase was made.</p></div>
+  <div class="method-block"><h3>Limits to keep in view</h3>
+    <ul class="method-rules">
+      <li><b>Single-course precision is bounded.</b> A blind re-rating of 161 courses matched <b>79.1%</b> exactly and <b>97.1%</b> within one band. Patterns across many courses are reliable; treat any one rating as one reasonable reading.</li>
+      <li><b>No enrollment, completion, or local labor-market data</b> is included. Exposure is not demand.</li>
+      <li><b>The 10-year horizon is hedged by design.</b> Confident ten-year predictions would signal a weak analysis, not a strong one.</li>
+      <li><b>Public data only.</b> Every input is the public catalog and published research. The page contains no student or employee records, and department contact details were removed from catalog text.</li>
+    </ul></div>
+  <div class="method-block"><h3>Key sources</h3>
+    <ol class="srcs">${SRC.map(([t, u, f]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>${f ? `<span class="flag">${f}</span>` : ''}</li>`).join('')}</ol>
+    <p>The full master report and the seven college volumes carry complete citations, including 27 hyperlinked sources for the September 2026 update.</p></div>`;
+}
+
+// ---------- render ----------
+function render() {
+  const rows = filtered();
+  kpis(rows); rail(); dist(filtered({ col: S.distBy === 'col' })); table(rows);
+  $('#foot').innerHTML = `MSU Denver 2026–27 Undergraduate Catalog · 3,219 rated courses (42 excluded as out of scope) · ratings revised September 21, 2026 · public catalog and published research only; no student or employee data. Discussion marks, notes, and lists are stored only in your browser.`;
+}
+
+// ---------- events ----------
+document.addEventListener('click', e => {
+  const t = e.target.closest('button,[data-open],.drow,tbody tr');
+  if (!t) return;
+  if (t.matches('.chip')) {
+    const g = t.dataset.g, v = t.dataset.v;
+    if (g === 'ids') { S.ids = null; S.idsLabel = ''; }
+    else if (g === 'prefix') S.prefix = '';
+    else if (g === 'lv') S.lv = v;
+    else { const val = g === 'col' || g === 'why' ? v : +v; const set = S[g]; set.has(val) ? set.delete(val) : set.add(val); }
+    shown = 200; render(); return;
+  }
+  if (t.closest('#hzSeg')) { S.h = +t.dataset.h; S.rt.clear(); S.why.clear(); render(); return; }
+  if (t.closest('#distBy')) { S.distBy = t.dataset.v; document.querySelectorAll('#distBy button').forEach(b => b.classList.toggle('on', b === t)); render(); return; }
+  if (t.matches('.drow')) {
+    const k = t.dataset.k;
+    if (S.distBy === 'col') { const only = S.col.size === 1 && S.col.has(k); S.col = only ? new Set() : new Set([k]); }
+    else S.prefix = S.prefix === k ? '' : k;
+    shown = 200; render(); return;
+  }
+  if (t.dataset.show !== undefined) {
+    const x = concerns.L[+t.dataset.show];
+    S.ids = new Set(x.set); S.idsLabel = x.t; S.rt.clear(); S.why.clear(); S.col.clear(); S.prefix = ''; S.q = ''; $('#search').value = '';
+    shown = 200; render(); document.getElementById('coursePanel').scrollIntoView({ behavior: 'smooth' }); return;
+  }
+  if (t.dataset.prefix) { S.prefix = t.dataset.prefix; S.distBy = 'pre'; S.ids = null; shown = 200;
+    document.querySelectorAll('#distBy button').forEach(b => b.classList.toggle('on', b.dataset.v === 'pre')); render();
+    document.getElementById('coursePanel').scrollIntoView({ behavior: 'smooth' }); return; }
+  if (t.id === 'more') { shown += 200; render(); return; }
+  if (t.matches('tbody tr[data-id]')) { openDrawer(t.dataset.id); return; }
+  if (t.dataset.open) { openDrawer(t.dataset.open); return; }
+  if (t.id === 'drAdd') { const l = list(); if (!l.some(x => x.id === drawerId)) { l.push({ id: drawerId, note: '' }); setList(l); toast('Added to discussion list'); } openDrawer(drawerId); return; }
+  if (t.id === 'drX') { closeDrawer(); return; }
+  if (t.dataset.rm) { setList(list().filter(x => x.id !== t.dataset.rm)); return; }
+  if (t.id === 'addAll') {
+    const l = list(), have = new Set(l.map(x => x.id)); let n = 0;
+    filtered().slice(0, 500).forEach(c => { if (!have.has(c.id)) { l.push({ id: c.id, note: '' }); n++; } });
+    setList(l); toast(n ? `Added ${n} course${n > 1 ? 's' : ''}` : 'Already on the list'); return;
+  }
+  if (t.id === 'slClear') { if (confirm('Clear the discussion list in this browser?')) setList([]); return; }
+  if (t.id === 'slCopy') { navigator.clipboard.writeText(listText()).then(() => toast('Copied'), () => toast('Copy failed')); return; }
+  if (t.id === 'slCsv') {
+    const rows = [['Course', 'Title', 'College', '24 mo', '5 yr', '10 yr', 'Confidence', 'Note']].concat(list().map(x => { const c = byId[x.id]; return [c.id, c.t, COLS[c.col], ...c.r.map(b => BAND[b]), ['low', 'medium', 'high'][c.cf], x.note || '']; }));
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'ai-exposure-discussion-list.csv'; a.click(); return;
+  }
+  if (t.id === 'agendaReset') { if (confirm('Clear discussion marks and notes in this browser?')) { store.set('marks', {}); store.set('notes', {}); concerns(); } return; }
+  if (t.id === 'reset') {
+    Object.assign(S, JSON.parse(initS), { col: new Set(), rt: new Set(), why: new Set(), cf: new Set(), ids: null });
+    $('#search').value = ''; $('#sort').value = 'exp'; document.querySelectorAll('#distBy button').forEach(b => b.classList.toggle('on', b.dataset.v === 'col'));
+    shown = 200; render(); return;
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'fGs') { S.gs = t.checked; shown = 200; render(); }
+  else if (t.id === 'fUpd') { S.upd = t.checked; shown = 200; render(); }
+  else if (t.id === 'sort') { S.sort = t.value; render(); }
+  else if (t.dataset.mark !== undefined) { const m = store.get('marks', {}); m[t.dataset.mark] = t.checked; store.set('marks', m); t.closest('.cc').classList.toggle('done', t.checked); }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'search') { S.q = t.value; shown = 200; render(); }
+  else if (t.dataset.note !== undefined) { const n = store.get('notes', {}); n[t.dataset.note] = t.value; store.set('notes', n); }
+  else if (t.dataset.slnote) { const l = list(); const x = l.find(y => y.id === t.dataset.slnote); if (x) { x.note = t.value; store.set('list', l); } }
+});
+$('#scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerId) closeDrawer(); });
+let tt; function toast(m) { const el = $('#toast'); el.textContent = m; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 1800); }
+
+concerns(); method(); shortlist(); render();
+})();
+</script>
+</body>
+</html>
